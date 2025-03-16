@@ -1,113 +1,124 @@
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Play, Clock, ChevronLeft, Flame, ChartBar as BarChart3 } from 'lucide-react-native';
-import { useAppNavigation } from '../../hooks/useAppNavigation';
 import GradientBackground from '../../components/GradientBackground';
-
-const workoutData = {
-  id: 1,
-  title: 'Full Body Power',
-  description: 'A comprehensive full-body workout designed to build strength and muscle endurance.',
-  duration: '45 min',
-  difficulty: 'Advanced',
-  calories: '450 cal',
-  exercises: [
-    {
-      id: 1,
-      name: 'Barbell Squats',
-      sets: 4,
-      reps: '8-10',
-      rest: '90s',
-    },
-    {
-      id: 2,
-      name: 'Bench Press',
-      sets: 4,
-      reps: '8-12',
-      rest: '90s',
-    },
-    {
-      id: 3,
-      name: 'Deadlifts',
-      sets: 3,
-      reps: '8-10',
-      rest: '120s',
-    },
-    {
-      id: 4,
-      name: 'Pull-ups',
-      sets: 3,
-      reps: '8-12',
-      rest: '60s',
-    },
-  ],
-};
+import { useWorkout } from '../../lib/hooks/useWorkout';
+import { useActiveWorkout } from '../../lib/hooks/useActiveWorkout';
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams();
-  const { navigateBack } = useAppNavigation();
+  const router = useRouter();
+  const { workout, loading: workoutLoading, error: workoutError } = useWorkout(id as string);
+  const { startWorkout, loading: startingWorkout, error: startError } = useActiveWorkout(id as string);
+
+  const handleStartWorkout = async () => {
+    try {
+      await startWorkout();
+      router.push(`/workout/${id}/active`);
+    } catch (error) {
+      console.error('Error starting workout:', error);
+    }
+  };
+
+  if (workoutLoading) {
+    return (
+      <GradientBackground>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#fff" />
+        </View>
+      </GradientBackground>
+    );
+  }
+
+  if (workoutError) {
+    return (
+      <GradientBackground>
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{workoutError}</Text>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}>
+            <ChevronLeft size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+      </GradientBackground>
+    );
+  }
 
   return (
     <GradientBackground>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={navigateBack}>
+          <TouchableOpacity 
+            style={styles.backButton}
+            onPress={() => router.back()}>
             <ChevronLeft size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.title}>{workoutData.title}</Text>
+          <Text style={styles.title}>{workout.title}</Text>
         </View>
 
         <View style={styles.content}>
-          <Text style={styles.description}>{workoutData.description}</Text>
+          <Text style={styles.description}>{workout.description}</Text>
 
           <View style={styles.stats}>
             <View style={styles.stat}>
               <Clock size={20} color="#fff" />
-              <Text style={styles.statValue}>{workoutData.duration}</Text>
+              <Text style={styles.statValue}>{workout.duration_minutes} min</Text>
             </View>
             <View style={styles.stat}>
               <Flame size={20} color="#fff" />
-              <Text style={styles.statValue}>{workoutData.calories}</Text>
+              <Text style={styles.statValue}>450 cal</Text>
             </View>
             <View style={styles.stat}>
               <BarChart3 size={20} color="#fff" />
-              <Text style={styles.statValue}>{workoutData.difficulty}</Text>
+              <Text style={styles.statValue}>{workout.difficulty}</Text>
             </View>
           </View>
 
           <View style={styles.exerciseList}>
             <Text style={styles.sectionTitle}>Exercises</Text>
-            {workoutData.exercises.map((exercise, index) => (
-              <View key={exercise.id} style={styles.exerciseCard}>
-                <View style={styles.exerciseHeader}>
-                  <View style={styles.exerciseNumber}>
-                    <Text style={styles.exerciseNumberText}>{index + 1}</Text>
+            {workout.workout_exercises
+              .sort((a: any, b: any) => a.order_index - b.order_index)
+              .map((workoutExercise: any, index: number) => (
+                <View key={workoutExercise.id} style={styles.exerciseCard}>
+                  <View style={styles.exerciseHeader}>
+                    <View style={styles.exerciseNumber}>
+                      <Text style={styles.exerciseNumberText}>{index + 1}</Text>
+                    </View>
+                    <Text style={styles.exerciseName}>{workoutExercise.exercise.name}</Text>
                   </View>
-                  <Text style={styles.exerciseName}>{exercise.name}</Text>
+                  <View style={styles.exerciseDetails}>
+                    <View style={styles.exerciseDetail}>
+                      <Text style={styles.detailLabel}>Sets</Text>
+                      <Text style={styles.detailValue}>{workoutExercise.sets}</Text>
+                    </View>
+                    <View style={styles.exerciseDetail}>
+                      <Text style={styles.detailLabel}>Reps</Text>
+                      <Text style={styles.detailValue}>{workoutExercise.reps}</Text>
+                    </View>
+                    <View style={styles.exerciseDetail}>
+                      <Text style={styles.detailLabel}>Rest</Text>
+                      <Text style={styles.detailValue}>{workoutExercise.rest_seconds}s</Text>
+                    </View>
+                  </View>
                 </View>
-                <View style={styles.exerciseDetails}>
-                  <View style={styles.exerciseDetail}>
-                    <Text style={styles.detailLabel}>Sets</Text>
-                    <Text style={styles.detailValue}>{exercise.sets}</Text>
-                  </View>
-                  <View style={styles.exerciseDetail}>
-                    <Text style={styles.detailLabel}>Reps</Text>
-                    <Text style={styles.detailValue}>{exercise.reps}</Text>
-                  </View>
-                  <View style={styles.exerciseDetail}>
-                    <Text style={styles.detailLabel}>Rest</Text>
-                    <Text style={styles.detailValue}>{exercise.rest}</Text>
-                  </View>
-                </View>
-              </View>
-            ))}
+              ))}
           </View>
         </View>
 
-        <TouchableOpacity style={styles.startButton}>
+        <TouchableOpacity 
+          style={[styles.startButton, startingWorkout && styles.startButtonDisabled]}
+          onPress={handleStartWorkout}
+          disabled={startingWorkout}>
           <Play size={24} color="#fff" />
-          <Text style={styles.startButtonText}>Start Workout</Text>
+          <Text style={styles.startButtonText}>
+            {startingWorkout ? 'Starting...' : 'Start Workout'}
+          </Text>
         </TouchableOpacity>
+
+        {startError && (
+          <Text style={styles.errorText}>{startError}</Text>
+        )}
       </ScrollView>
     </GradientBackground>
   );
@@ -116,6 +127,17 @@ export default function WorkoutDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
   },
   header: {
     flexDirection: 'row',
@@ -240,9 +262,20 @@ const styles = StyleSheet.create({
     gap: 8,
     margin: 24,
   },
+  startButtonDisabled: {
+    opacity: 0.6,
+  },
   startButtonText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     color: '#fff',
+  },
+  errorText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: '#FF3B30',
+    textAlign: 'center',
+    marginHorizontal: 24,
+    marginBottom: 24,
   },
 });

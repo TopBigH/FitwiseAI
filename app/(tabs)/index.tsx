@@ -1,61 +1,93 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
-import { Dumbbell, Timer, Flame, Zap } from 'lucide-react-native';
+import { Timer, Flame } from 'lucide-react-native';
+import { useEffect, useState } from 'react';
+import { supabase } from '../../lib/supabase';
 import GradientBackground from '../../components/GradientBackground';
-
-const featuredWorkouts = [
-  {
-    id: 1,
-    title: 'Full Body Power',
-    duration: '45 min',
-    level: 'Advanced',
-    calories: '450',
-    color: '#FF6B6B',
-  },
-  {
-    id: 2,
-    title: 'HIIT Cardio',
-    duration: '30 min',
-    level: 'Intermediate',
-    calories: '380',
-    color: '#4ECDC4',
-  }
-];
 
 const categories = [
   {
     id: 'strength',
     title: 'Strength',
-    icon: Dumbbell,
     color: '#FF6B6B',
     workouts: 24,
   },
   {
     id: 'hiit',
     title: 'HIIT',
-    icon: Zap,
     color: '#4ECDC4',
     workouts: 18,
   },
   {
     id: 'cardio',
     title: 'Cardio',
-    icon: Timer,
     color: '#45B7D1',
     workouts: 16,
-  },
-  {
-    id: 'endurance',
-    title: 'Endurance',
-    icon: Flame,
-    color: '#96CEB4',
-    workouts: 12,
   },
 ];
 
 export default function WorkoutsScreen() {
-  const handleWorkoutPress = (workoutId: number) => {
-    router.push(`/workout/${workoutId}`);
+  const [featuredWorkouts, setFeaturedWorkouts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchFeaturedWorkouts();
+  }, []);
+
+  const fetchFeaturedWorkouts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        router.replace('/login');
+        return;
+      }
+
+      const { data, error: fetchError } = await supabase
+        .from('workout_templates')
+        .select(`
+          *,
+          workout_exercises (
+            exercise:exercises (
+              name,
+              category,
+              difficulty
+            )
+          )
+        `)
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(3);
+
+      if (fetchError) {
+        throw new Error(fetchError.message);
+      }
+
+      setFeaturedWorkouts(data || []);
+    } catch (err) {
+      setError('Error loading workouts. Please try again.');
+      console.error('Error fetching workouts:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleWorkoutPress = (workoutId: string) => {
+    router.push({
+      pathname: '/workout/[id]',
+      params: { id: workoutId }
+    });
+  };
+
+  const handleCategoryPress = (categoryId: string) => {
+    router.push({
+      pathname: '/category/[id]',
+      params: { id: categoryId }
+    });
   };
 
   return (
@@ -66,41 +98,59 @@ export default function WorkoutsScreen() {
             <Text style={styles.greeting}>Welcome to</Text>
             <Text style={styles.name}>FitWise</Text>
           </View>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>F</Text>
-          </View>
         </View>
 
         <View style={styles.featuredSection}>
           <Text style={styles.sectionTitle}>Featured Workouts</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.featuredContent}>
-            {featuredWorkouts.map((workout) => (
-              <TouchableOpacity
-                key={workout.id}
-                style={[styles.featuredCard, { backgroundColor: `${workout.color}20` }]}
-                onPress={() => handleWorkoutPress(workout.id)}>
-                <View style={styles.featuredContent}>
-                  <Text style={styles.featuredTitle}>{workout.title}</Text>
-                  <View style={styles.featuredStats}>
-                    <View style={styles.featuredStat}>
-                      <Timer size={14} color="#fff" />
-                      <Text style={styles.featuredStatText}>{workout.duration}</Text>
-                    </View>
-                    <View style={styles.featuredStat}>
-                      <Flame size={14} color="#fff" />
-                      <Text style={styles.featuredStatText}>{workout.calories} cal</Text>
-                    </View>
-                  </View>
-                  <View style={[styles.levelBadge, { backgroundColor: workout.color }]}>
-                    <Text style={styles.levelText}>{workout.level}</Text>
-                  </View>
-                </View>
+          {error ? (
+            <View style={styles.errorContainer}>
+              <Text style={styles.errorText}>{error}</Text>
+              <TouchableOpacity 
+                style={styles.retryButton}
+                onPress={fetchFeaturedWorkouts}>
+                <Text style={styles.retryButtonText}>Retry</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+          ) : (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.featuredContent}>
+              {loading ? (
+                <View style={styles.loadingCard}>
+                  <Text style={styles.loadingText}>Loading workouts...</Text>
+                </View>
+              ) : featuredWorkouts.length > 0 ? (
+                featuredWorkouts.map((workout) => (
+                  <TouchableOpacity
+                    key={workout.id}
+                    style={[styles.featuredCard, { backgroundColor: `${categories[0].color}20` }]}
+                    onPress={() => handleWorkoutPress(workout.id)}>
+                    <View style={styles.featuredContent}>
+                      <Text style={styles.featuredTitle}>{workout.title}</Text>
+                      <View style={styles.featuredStats}>
+                        <View style={styles.featuredStat}>
+                          <Timer size={14} color="#fff" />
+                          <Text style={styles.featuredStatText}>{workout.duration_minutes} min</Text>
+                        </View>
+                        <View style={styles.featuredStat}>
+                          <Flame size={14} color="#fff" />
+                          <Text style={styles.featuredStatText}>450 cal</Text>
+                        </View>
+                      </View>
+                      <View style={[styles.levelBadge, { backgroundColor: categories[0].color }]}>
+                        <Text style={styles.levelText}>{workout.difficulty}</Text>
+                      </View>
+                    </View>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <View style={styles.emptyCard}>
+                  <Text style={styles.emptyText}>No featured workouts available</Text>
+                </View>
+              )}
+            </ScrollView>
+          )}
         </View>
 
         <View style={styles.categoriesSection}>
@@ -110,10 +160,8 @@ export default function WorkoutsScreen() {
               <TouchableOpacity
                 key={category.id}
                 style={[styles.categoryCard, { backgroundColor: `${category.color}20` }]}
-                onPress={() => router.push(`/category/${category.id}`)}>
-                <View style={[styles.categoryIcon, { backgroundColor: category.color }]}>
-                  <category.icon size={24} color="#fff" />
-                </View>
+                onPress={() => handleCategoryPress(category.id)}>
+                <View style={[styles.categoryIcon, { backgroundColor: category.color }]} />
                 <Text style={styles.categoryTitle}>{category.title}</Text>
                 <Text style={styles.categoryCount}>{category.workouts} workouts</Text>
               </TouchableOpacity>
@@ -130,9 +178,6 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
     paddingHorizontal: 20,
     paddingTop: 60,
     paddingBottom: 20,
@@ -146,21 +191,6 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: 'Inter-Bold',
     fontSize: 32,
-    color: '#fff',
-  },
-  logoContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: '#0066FF',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.2)',
-  },
-  logoText: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 24,
     color: '#fff',
   },
   featuredSection: {
@@ -238,8 +268,6 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
     marginBottom: 12,
   },
   categoryTitle: {
@@ -252,5 +280,59 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 14,
     color: 'rgba(255,255,255,0.7)',
+  },
+  errorContainer: {
+    backgroundColor: 'rgba(255,59,48,0.1)',
+    borderRadius: 12,
+    padding: 16,
+    marginHorizontal: 20,
+    alignItems: 'center',
+  },
+  errorText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: '#FF3B30',
+    marginBottom: 12,
+    textAlign: 'center',
+  },
+  retryButton: {
+    backgroundColor: '#FF3B30',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: '#fff',
+  },
+  loadingCard: {
+    width: 280,
+    height: 160,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  loadingText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  emptyCard: {
+    width: 280,
+    height: 160,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  emptyText: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    textAlign: 'center',
   },
 });

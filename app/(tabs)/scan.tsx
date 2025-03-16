@@ -1,9 +1,8 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
-import { Camera as CameraIcon, Info, ChevronRight, X } from 'lucide-react-native';
+import { useState, useRef } from 'react';
+import { StyleSheet, Text, TouchableOpacity, View, Platform, Image } from 'react-native';
 import { Camera, CameraType } from 'expo-camera';
-import { useState, useEffect, useRef } from 'react';
 import { router } from 'expo-router';
-import { useAppNavigation } from '../../hooks/useAppNavigation';
+import { Camera as CameraIcon, Info, ChevronRight, X } from 'lucide-react-native';
 import GradientBackground from '../../components/GradientBackground';
 
 const recentScans = [
@@ -25,7 +24,6 @@ export default function ScanScreen() {
   const [permission, requestPermission] = Camera.useCameraPermissions();
   const [isCameraActive, setIsCameraActive] = useState(false);
   const cameraRef = useRef<Camera>(null);
-  const { navigateBack } = useAppNavigation();
 
   const handleScanPress = async () => {
     if (Platform.OS === 'web') {
@@ -70,9 +68,9 @@ export default function ScanScreen() {
         <View style={styles.container}>
           <Text style={styles.text}>We need your permission to use the camera</Text>
           <TouchableOpacity 
-            style={styles.retryButton}
+            style={styles.button}
             onPress={requestPermission}>
-            <Text style={styles.retryButtonText}>Grant Permission</Text>
+            <Text style={styles.buttonText}>Grant Permission</Text>
           </TouchableOpacity>
         </View>
       </GradientBackground>
@@ -127,12 +125,12 @@ export default function ScanScreen() {
         </View>
 
         <TouchableOpacity 
-          style={styles.cameraButton}
+          style={styles.scanButton}
           onPress={handleScanPress}>
-          <View style={styles.cameraIcon}>
+          <View style={styles.iconContainer}>
             <CameraIcon size={32} color="#fff" />
           </View>
-          <Text style={styles.cameraText}>Tap to Scan Equipment</Text>
+          <Text style={styles.scanText}>Tap to Scan Equipment</Text>
           {Platform.OS === 'web' && (
             <Text style={styles.webNote}>
               Download our mobile app for camera functionality
@@ -199,21 +197,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
     textAlign: 'center',
-    marginBottom: 20,
   },
-  retryButton: {
+  button: {
     backgroundColor: '#0066FF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+    padding: 16,
     borderRadius: 12,
-    alignSelf: 'center',
+    marginTop: 20,
   },
-  retryButtonText: {
+  buttonText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     color: '#fff',
+    textAlign: 'center',
   },
-  cameraButton: {
+  scanButton: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 24,
     padding: 24,
@@ -222,7 +219,7 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
     marginBottom: 24,
   },
-  cameraIcon: {
+  iconContainer: {
     width: 80,
     height: 80,
     borderRadius: 40,
@@ -231,7 +228,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
-  cameraText: {
+  scanText: {
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     color: '#fff',
@@ -274,6 +271,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Bold',
     fontSize: 20,
     color: '#fff',
+    marginBottom: 8,
   },
   scanItem: {
     flexDirection: 'row',

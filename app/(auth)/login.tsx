@@ -20,16 +20,37 @@ export default function LoginScreen() {
       setLoading(true);
       setError(null);
       
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password.trim(),
       });
 
-      if (error) throw error;
+      if (signInError) {
+        if (signInError.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password');
+        }
+        throw signInError;
+      }
+
+      if (!data?.session) {
+        throw new Error('No session created');
+      }
+
+      // Verify the session was created
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        throw sessionError;
+      }
+
+      if (!session) {
+        throw new Error('Session verification failed');
+      }
 
       router.replace('/(tabs)');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -63,6 +84,7 @@ export default function LoginScreen() {
               placeholderTextColor="rgba(255,255,255,0.5)"
               keyboardType="email-address"
               autoCapitalize="none"
+              autoComplete="email"
               value={email}
               onChangeText={setEmail}
               onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
@@ -82,6 +104,7 @@ export default function LoginScreen() {
               placeholder="Enter your password"
               placeholderTextColor="rgba(255,255,255,0.5)"
               secureTextEntry
+              autoComplete="current-password"
               value={password}
               onChangeText={setPassword}
               onBlur={() => setTouched(prev => ({ ...prev, password: true }))}
@@ -98,7 +121,7 @@ export default function LoginScreen() {
           <TouchableOpacity 
             style={[styles.button, !canSubmit && styles.buttonDisabled]} 
             onPress={handleLogin}
-            disabled={!canSubmit}>
+            disabled={!canSubmit || loading}>
             {loading ? (
               <ActivityIndicator color="#fff" />
             ) : (

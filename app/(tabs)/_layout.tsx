@@ -1,6 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Dumbbell, Calendar, Camera, User } from 'lucide-react-native';
-import { View } from 'react-native';
+import { Dumbbell, Calendar, User } from 'lucide-react-native';
 
 export default function TabLayout() {
   return (
@@ -39,15 +38,6 @@ export default function TabLayout() {
           title: 'Progress',
           tabBarIcon: ({ color, size }) => (
             <Calendar size={size} color={color} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="scan"
-        options={{
-          title: 'Scan',
-          tabBarIcon: ({ color, size }) => (
-            <Camera size={size} color={color} />
           ),
         }}
       />

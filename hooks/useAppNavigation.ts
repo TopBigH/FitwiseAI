@@ -1,11 +1,14 @@
-import { router } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
+import { Platform } from 'react-native';
 
 export function useAppNavigation() {
+  const router = useRouter();
+  const navigation = useNavigation();
+
   const navigateBack = () => {
-    try {
-      router.back();
-    } catch (error) {
-      // Fallback to the main tab route if back navigation fails
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
       router.replace('/(tabs)');
     }
   };
