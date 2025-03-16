@@ -33,7 +33,10 @@ export function useProfile() {
         if (profileError.code === 'PGRST116') {
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
-            .insert([{ id: user.id }])
+            .insert([{ 
+              id: user.id,
+              full_name: user.user_metadata?.full_name || null
+            }])
             .select()
             .single();
 
