@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { Settings, CircleHelp, LogOut, User } from 'lucide-react-native';
+import { Settings, CircleHelp, LogOut } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 import GradientBackground from '../../components/GradientBackground';
 
@@ -55,16 +55,12 @@ export default function ProfileScreen() {
     <GradientBackground>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <View style={styles.profileSection}>
-            <View style={styles.avatarContainer}>
-              <User size={40} color="#fff" />
-            </View>
-            <View style={styles.profileInfo}>
-              <Text style={styles.email}>{user?.email}</Text>
-              <TouchableOpacity style={styles.editButton}>
-                <Text style={styles.editButtonText}>Edit Profile</Text>
-              </TouchableOpacity>
-            </View>
+          <View style={styles.profileInfo}>
+            <Text style={styles.name}>{user?.full_name || 'User'}</Text>
+            <Text style={styles.email}>{user?.email}</Text>
+            <TouchableOpacity style={styles.editButton}>
+              <Text style={styles.editButtonText}>Edit Profile</Text>
+            </TouchableOpacity>
           </View>
 
           <View style={styles.statsContainer}>
@@ -124,24 +120,14 @@ const styles = StyleSheet.create({
     padding: 20,
     paddingTop: 60,
   },
-  profileSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  profileInfo: {
     marginBottom: 24,
   },
-  avatarContainer: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: '#0066FF',
-  },
-  profileInfo: {
-    flex: 1,
-    marginLeft: 20,
+  name: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 4,
   },
   email: {
     fontFamily: 'Inter-Regular',
