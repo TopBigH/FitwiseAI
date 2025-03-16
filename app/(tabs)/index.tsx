@@ -13,21 +13,21 @@ const categories = [
     id: 'strength',
     title: 'Strength',
     icon: Dumbbell,
-    colors: ['#FF6B6B', '#EE5D5D'],
+    gradientColors: ['#1A1A1A', '#FF416C'],
     workouts: 24,
   },
   {
     id: 'hiit',
     title: 'HIIT',
     icon: Zap,
-    colors: ['#4ECDC4', '#45B7B0'],
+    gradientColors: ['#1A1A1A', '#7928CA'],
     workouts: 18,
   },
   {
     id: 'cardio',
     title: 'Cardio',
     icon: Heart,
-    colors: ['#45B7D1', '#3DA5BD'],
+    gradientColors: ['#1A1A1A', '#00B4DB'],
     workouts: 16,
   },
 ];
@@ -118,7 +118,7 @@ export default function WorkoutsScreen() {
                 key={category.id}
                 onPress={() => handleCategoryPress(category.id)}>
                 <LinearGradient
-                  colors={category.colors}
+                  colors={category.gradientColors}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={[
@@ -164,7 +164,7 @@ export default function WorkoutsScreen() {
                       key={workout.id}
                       onPress={() => handleWorkoutPress(workout.id)}>
                       <LinearGradient
-                        colors={category?.colors || ['#FF6B6B', '#EE5D5D']}
+                        colors={category?.gradientColors || ['#1A1A1A', '#FF416C']}
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 1 }}
                         style={styles.featuredCard}>
@@ -238,14 +238,17 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginBottom: 16,
-  },
-  categoryCardSelected: {
-    transform: [{ scale: 1.05 }],
+    backgroundColor: '#1A1A1A',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+  },
+  categoryCardSelected: {
+    transform: [{ scale: 1.05 }],
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
   categoryIcon: {
     width: 48,
@@ -279,6 +282,12 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     padding: 24,
     marginRight: 16,
+    backgroundColor: '#1A1A1A',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 5,
   },
   featuredTitle: {
     fontFamily: 'Inter-Bold',

@@ -1,15 +1,15 @@
 import { View, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import TopologyBackground from './TopologyBackground';
 
 export default function GradientBackground({ children }: { children: React.ReactNode }) {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#0A0A0F', '#141420', '#1A1A25']}
+        colors={['#000000', '#000B1F', '#001845']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
         style={styles.gradient}
       />
-      <TopologyBackground />
       <View style={styles.content}>
         {children}
       </View>
@@ -20,6 +20,9 @@ export default function GradientBackground({ children }: { children: React.React
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#000000',
   },
   gradient: {
     position: 'absolute',
@@ -30,6 +33,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    zIndex: 1,
+    width: '100%',
+    height: '100%',
   },
 });
