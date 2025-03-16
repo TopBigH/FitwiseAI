@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Dumbbell, FileWarning as Running, Waves, Cog as Yoga } from 'lucide-react-native';
+import { Dumbbell, FileWarning as Running, SwissFranc as Swim, Cog as Yoga } from 'lucide-react-native';
 import GradientBackground from '../../components/GradientBackground';
 
 const workoutCategories = [
@@ -7,29 +7,22 @@ const workoutCategories = [
     id: 1,
     title: 'Swimming',
     duration: '40m',
-    icon: Waves,
-    color: '#4A90E2',
+    icon: Swim,
+    color: '#0066FF',
   },
   {
     id: 2,
     title: 'Body Building',
-    duration: '50m',
+    duration: '40 minutes',
     icon: Dumbbell,
-    color: '#E25C4A',
+    color: '#0066FF',
   },
   {
     id: 3,
     title: 'Running',
     duration: '30m',
     icon: Running,
-    color: '#50E3C2',
-  },
-  {
-    id: 4,
-    title: 'Pilates',
-    duration: '45m',
-    icon: Yoga,
-    color: '#BD10E0',
+    color: '#0066FF',
   },
 ];
 
@@ -40,7 +33,10 @@ export default function WorkoutsScreen() {
     <GradientBackground>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>SELECT WORKOUT</Text>
+          <View>
+            <Text style={styles.title}>SELECT</Text>
+            <Text style={styles.title}>WORKOUT</Text>
+          </View>
           <TouchableOpacity style={styles.menuButton}>
             <View style={styles.menuIcon} />
             <View style={styles.menuIcon} />
@@ -66,15 +62,14 @@ export default function WorkoutsScreen() {
         <View style={styles.workoutList}>
           {workoutCategories.map((workout) => (
             <TouchableOpacity key={workout.id} style={styles.workoutCard}>
-              <View style={[styles.iconContainer, { backgroundColor: workout.color }]}>
-                <workout.icon size={24} color="#fff" />
-              </View>
-              <View style={styles.workoutInfo}>
-                <Text style={styles.workoutTitle}>{workout.title}</Text>
-                <Text style={styles.workoutDuration}>{workout.duration}</Text>
-              </View>
-              <View style={styles.startButton}>
-                <Text style={styles.startButtonText}>Start</Text>
+              <View style={styles.workoutContent}>
+                <View style={styles.iconContainer}>
+                  <workout.icon size={24} color="#fff" strokeWidth={1.5} />
+                </View>
+                <View style={styles.workoutInfo}>
+                  <Text style={styles.workoutTitle}>{workout.title}</Text>
+                  <Text style={styles.workoutDuration}>{workout.duration}</Text>
+                </View>
               </View>
             </TouchableOpacity>
           ))}
@@ -91,15 +86,16 @@ const styles = StyleSheet.create({
   },
   header: {
     marginTop: 60,
-    marginBottom: 24,
+    marginBottom: 32,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
   },
   title: {
     fontFamily: 'Inter-Bold',
-    fontSize: 24,
+    fontSize: 36,
     color: '#fff',
+    lineHeight: 40,
   },
   menuButton: {
     width: 24,
@@ -114,24 +110,26 @@ const styles = StyleSheet.create({
     borderRadius: 2,
   },
   filters: {
-    marginBottom: 24,
+    marginBottom: 32,
   },
   filtersContent: {
-    paddingRight: 20,
     gap: 12,
   },
   filterButton: {
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 100,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
   filterButtonActive: {
-    backgroundColor: '#302b63',
+    backgroundColor: '#0066FF',
+    borderColor: '#0066FF',
   },
   filterText: {
-    color: '#999',
-    fontFamily: 'Inter-Regular',
+    color: 'rgba(255,255,255,0.5)',
+    fontFamily: 'Inter-SemiBold',
     fontSize: 14,
   },
   filterTextActive: {
@@ -141,22 +139,30 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   workoutCard: {
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 24,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  workoutContent: {
+    padding: 24,
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 16,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 16,
+    gap: 16,
   },
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 24,
+    borderRadius: 16,
+    backgroundColor: 'rgba(0,102,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(0,102,255,0.2)',
   },
   workoutInfo: {
     flex: 1,
-    marginLeft: 16,
   },
   workoutTitle: {
     color: '#fff',
@@ -165,19 +171,8 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   workoutDuration: {
-    color: '#999',
+    color: 'rgba(255,255,255,0.5)',
     fontFamily: 'Inter-Regular',
-    fontSize: 14,
-  },
-  startButton: {
-    backgroundColor: '#302b63',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-    borderRadius: 20,
-  },
-  startButtonText: {
-    color: '#fff',
-    fontFamily: 'Inter-SemiBold',
     fontSize: 14,
   },
 });

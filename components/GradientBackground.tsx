@@ -6,7 +6,7 @@ export default function GradientBackground({ children }: { children: React.React
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#0f0c29', '#302b63', '#24243e']}
+        colors={['#0A0A0F', '#141420', '#1A1A25']}
         style={styles.gradient}
       />
       <TopologyBackground />
