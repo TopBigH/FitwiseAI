@@ -1,34 +1,50 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Dumbbell, FileWarning as Running, SwissFranc as Swim, Cog as Yoga } from 'lucide-react-native';
+import { Dumbbell, FileWarning as Running, Timer, Cog as Yoga } from 'lucide-react-native';
+import { router } from 'expo-router';
 import GradientBackground from '../../components/GradientBackground';
 
 const workoutCategories = [
   {
     id: 1,
-    title: 'Swimming',
-    duration: '40m',
-    icon: Swim,
-    color: '#0066FF',
+    title: 'Strength',
+    duration: '45m',
+    icon: Dumbbell,
+    description: 'Build muscle & strength',
+    exercises: 12,
   },
   {
     id: 2,
-    title: 'Body Building',
-    duration: '40 minutes',
-    icon: Dumbbell,
-    color: '#0066FF',
+    title: 'HIIT',
+    duration: '30m',
+    icon: Timer,
+    description: 'High intensity intervals',
+    exercises: 8,
   },
   {
     id: 3,
-    title: 'Running',
-    duration: '30m',
+    title: 'Cardio',
+    duration: '40m',
     icon: Running,
-    color: '#0066FF',
+    description: 'Improve endurance',
+    exercises: 6,
+  },
+  {
+    id: 4,
+    title: 'Flexibility',
+    duration: '35m',
+    icon: Yoga,
+    description: 'Enhance mobility',
+    exercises: 10,
   },
 ];
 
-const filters = ['Cardio', 'Running', 'Gym', 'Pilates'];
+const filters = ['All', 'Strength', 'Cardio', 'HIIT', 'Flexibility'];
 
 export default function WorkoutsScreen() {
+  const handleWorkoutPress = (workoutId: number) => {
+    router.push(`/workout/${workoutId}`);
+  };
+
   return (
     <GradientBackground>
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -61,14 +77,22 @@ export default function WorkoutsScreen() {
 
         <View style={styles.workoutList}>
           {workoutCategories.map((workout) => (
-            <TouchableOpacity key={workout.id} style={styles.workoutCard}>
+            <TouchableOpacity 
+              key={workout.id} 
+              style={styles.workoutCard}
+              onPress={() => handleWorkoutPress(workout.id)}>
               <View style={styles.workoutContent}>
                 <View style={styles.iconContainer}>
                   <workout.icon size={24} color="#fff" strokeWidth={1.5} />
                 </View>
                 <View style={styles.workoutInfo}>
                   <Text style={styles.workoutTitle}>{workout.title}</Text>
-                  <Text style={styles.workoutDuration}>{workout.duration}</Text>
+                  <Text style={styles.workoutDescription}>{workout.description}</Text>
+                  <View style={styles.workoutStats}>
+                    <Text style={styles.workoutStat}>{workout.duration}</Text>
+                    <Text style={styles.workoutStatDot}>•</Text>
+                    <Text style={styles.workoutStat}>{workout.exercises} exercises</Text>
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
@@ -170,9 +194,23 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 4,
   },
-  workoutDuration: {
+  workoutDescription: {
+    color: 'rgba(255,255,255,0.7)',
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    marginBottom: 8,
+  },
+  workoutStats: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  workoutStat: {
     color: 'rgba(255,255,255,0.5)',
     fontFamily: 'Inter-Regular',
     fontSize: 14,
+  },
+  workoutStatDot: {
+    color: 'rgba(255,255,255,0.5)',
+    marginHorizontal: 8,
   },
 });
