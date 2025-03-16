@@ -1,14 +1,19 @@
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TextInput, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Link, router } from 'expo-router';
-import GradientBackground from '../../components/GradientBackground';
-import { supabase } from '../../lib/supabase';
 import { useState } from 'react';
+import { supabase } from '../../lib/supabase';
+import GradientBackground from '../../components/GradientBackground';
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [touched, setTouched] = useState({ email: false, password: false });
+
+  const isEmailValid = email.includes('@') && email.includes('.');
+  const isPasswordValid = password.length >= 6;
+  const canSubmit = isEmailValid && isPasswordValid && !loading;
 
   const handleLogin = async () => {
     try {
@@ -48,26 +53,42 @@ export default function LoginScreen() {
           )}
 
           <View style={styles.inputContainer}>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Email"
+              style={[
+                styles.input,
+                touched.email && !isEmailValid && styles.inputError
+              ]}
+              placeholder="Enter your email"
               placeholderTextColor="rgba(255,255,255,0.5)"
               keyboardType="email-address"
               autoCapitalize="none"
               value={email}
               onChangeText={setEmail}
+              onBlur={() => setTouched(prev => ({ ...prev, email: true }))}
             />
+            {touched.email && !isEmailValid && (
+              <Text style={styles.validationText}>Please enter a valid email address</Text>
+            )}
           </View>
 
           <View style={styles.inputContainer}>
+            <Text style={styles.label}>Password</Text>
             <TextInput
-              style={styles.input}
-              placeholder="Password"
+              style={[
+                styles.input,
+                touched.password && !isPasswordValid && styles.inputError
+              ]}
+              placeholder="Enter your password"
               placeholderTextColor="rgba(255,255,255,0.5)"
               secureTextEntry
               value={password}
               onChangeText={setPassword}
+              onBlur={() => setTouched(prev => ({ ...prev, password: true }))}
             />
+            {touched.password && !isPasswordValid && (
+              <Text style={styles.validationText}>Password must be at least 6 characters</Text>
+            )}
           </View>
 
           <TouchableOpacity style={styles.forgotPassword}>
@@ -75,12 +96,14 @@ export default function LoginScreen() {
           </TouchableOpacity>
 
           <TouchableOpacity 
-            style={[styles.button, loading && styles.buttonDisabled]} 
+            style={[styles.button, !canSubmit && styles.buttonDisabled]} 
             onPress={handleLogin}
-            disabled={loading}>
-            <Text style={styles.buttonText}>
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Text>
+            disabled={!canSubmit}>
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.footer}>
@@ -145,6 +168,12 @@ const styles = StyleSheet.create({
   inputContainer: {
     marginBottom: 16,
   },
+  label: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: '#fff',
+    marginBottom: 8,
+  },
   input: {
     backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: 12,
@@ -154,6 +183,15 @@ const styles = StyleSheet.create({
     color: '#fff',
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.2)',
+  },
+  inputError: {
+    borderColor: '#FF3B30',
+  },
+  validationText: {
+    color: '#FF3B30',
+    fontFamily: 'Inter-Regular',
+    fontSize: 12,
+    marginTop: 4,
   },
   forgotPassword: {
     alignSelf: 'flex-end',
@@ -165,7 +203,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   button: {
-    backgroundColor: '#302b63',
+    backgroundColor: '#0066FF',
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',

@@ -1,44 +1,57 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
-import { Dumbbell, FileWarning as Running, Timer, Cog as Yoga } from 'lucide-react-native';
 import { router } from 'expo-router';
+import { Dumbbell, Timer, Flame, Zap } from 'lucide-react-native';
 import GradientBackground from '../../components/GradientBackground';
 
-const workoutCategories = [
+const featuredWorkouts = [
   {
     id: 1,
-    title: 'Strength',
-    duration: '45m',
-    icon: Dumbbell,
-    description: 'Build muscle & strength',
-    exercises: 12,
+    title: 'Full Body Power',
+    duration: '45 min',
+    level: 'Advanced',
+    calories: '450',
+    color: '#FF6B6B',
   },
   {
     id: 2,
-    title: 'HIIT',
-    duration: '30m',
-    icon: Timer,
-    description: 'High intensity intervals',
-    exercises: 8,
-  },
-  {
-    id: 3,
-    title: 'Cardio',
-    duration: '40m',
-    icon: Running,
-    description: 'Improve endurance',
-    exercises: 6,
-  },
-  {
-    id: 4,
-    title: 'Flexibility',
-    duration: '35m',
-    icon: Yoga,
-    description: 'Enhance mobility',
-    exercises: 10,
-  },
+    title: 'HIIT Cardio',
+    duration: '30 min',
+    level: 'Intermediate',
+    calories: '380',
+    color: '#4ECDC4',
+  }
 ];
 
-const filters = ['All', 'Strength', 'Cardio', 'HIIT', 'Flexibility'];
+const categories = [
+  {
+    id: 'strength',
+    title: 'Strength',
+    icon: Dumbbell,
+    color: '#FF6B6B',
+    workouts: 24,
+  },
+  {
+    id: 'hiit',
+    title: 'HIIT',
+    icon: Zap,
+    color: '#4ECDC4',
+    workouts: 18,
+  },
+  {
+    id: 'cardio',
+    title: 'Cardio',
+    icon: Timer,
+    color: '#45B7D1',
+    workouts: 16,
+  },
+  {
+    id: 'endurance',
+    title: 'Endurance',
+    icon: Flame,
+    color: '#96CEB4',
+    workouts: 12,
+  },
+];
 
 export default function WorkoutsScreen() {
   const handleWorkoutPress = (workoutId: number) => {
@@ -50,53 +63,62 @@ export default function WorkoutsScreen() {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
           <View>
-            <Text style={styles.title}>SELECT</Text>
-            <Text style={styles.title}>WORKOUT</Text>
+            <Text style={styles.greeting}>Welcome to</Text>
+            <Text style={styles.name}>FitWise</Text>
           </View>
-          <TouchableOpacity style={styles.menuButton}>
-            <View style={styles.menuIcon} />
-            <View style={styles.menuIcon} />
-          </TouchableOpacity>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoText}>F</Text>
+          </View>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.filters}
-          contentContainerStyle={styles.filtersContent}>
-          {filters.map((filter, index) => (
-            <TouchableOpacity
-              key={index}
-              style={[styles.filterButton, index === 0 && styles.filterButtonActive]}>
-              <Text style={[styles.filterText, index === 0 && styles.filterTextActive]}>
-                {filter}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-
-        <View style={styles.workoutList}>
-          {workoutCategories.map((workout) => (
-            <TouchableOpacity 
-              key={workout.id} 
-              style={styles.workoutCard}
-              onPress={() => handleWorkoutPress(workout.id)}>
-              <View style={styles.workoutContent}>
-                <View style={styles.iconContainer}>
-                  <workout.icon size={24} color="#fff" strokeWidth={1.5} />
-                </View>
-                <View style={styles.workoutInfo}>
-                  <Text style={styles.workoutTitle}>{workout.title}</Text>
-                  <Text style={styles.workoutDescription}>{workout.description}</Text>
-                  <View style={styles.workoutStats}>
-                    <Text style={styles.workoutStat}>{workout.duration}</Text>
-                    <Text style={styles.workoutStatDot}>•</Text>
-                    <Text style={styles.workoutStat}>{workout.exercises} exercises</Text>
+        <View style={styles.featuredSection}>
+          <Text style={styles.sectionTitle}>Featured Workouts</Text>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.featuredContent}>
+            {featuredWorkouts.map((workout) => (
+              <TouchableOpacity
+                key={workout.id}
+                style={[styles.featuredCard, { backgroundColor: `${workout.color}20` }]}
+                onPress={() => handleWorkoutPress(workout.id)}>
+                <View style={styles.featuredContent}>
+                  <Text style={styles.featuredTitle}>{workout.title}</Text>
+                  <View style={styles.featuredStats}>
+                    <View style={styles.featuredStat}>
+                      <Timer size={14} color="#fff" />
+                      <Text style={styles.featuredStatText}>{workout.duration}</Text>
+                    </View>
+                    <View style={styles.featuredStat}>
+                      <Flame size={14} color="#fff" />
+                      <Text style={styles.featuredStatText}>{workout.calories} cal</Text>
+                    </View>
+                  </View>
+                  <View style={[styles.levelBadge, { backgroundColor: workout.color }]}>
+                    <Text style={styles.levelText}>{workout.level}</Text>
                   </View>
                 </View>
-              </View>
-            </TouchableOpacity>
-          ))}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View style={styles.categoriesSection}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <View style={styles.categoriesGrid}>
+            {categories.map((category) => (
+              <TouchableOpacity
+                key={category.id}
+                style={[styles.categoryCard, { backgroundColor: `${category.color}20` }]}
+                onPress={() => router.push(`/category/${category.id}`)}>
+                <View style={[styles.categoryIcon, { backgroundColor: category.color }]}>
+                  <category.icon size={24} color="#fff" />
+                </View>
+                <Text style={styles.categoryTitle}>{category.title}</Text>
+                <Text style={styles.categoryCount}>{category.workouts} workouts</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
       </ScrollView>
     </GradientBackground>
@@ -106,111 +128,129 @@ export default function WorkoutsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
   header: {
-    marginTop: 60,
-    marginBottom: 32,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
   },
-  title: {
+  greeting: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.7)',
+    marginBottom: 4,
+  },
+  name: {
     fontFamily: 'Inter-Bold',
-    fontSize: 36,
+    fontSize: 32,
     color: '#fff',
-    lineHeight: 40,
   },
-  menuButton: {
-    width: 24,
-    height: 24,
-    justifyContent: 'center',
-    gap: 6,
-  },
-  menuIcon: {
-    width: 24,
-    height: 2,
-    backgroundColor: '#fff',
-    borderRadius: 2,
-  },
-  filters: {
-    marginBottom: 32,
-  },
-  filtersContent: {
-    gap: 12,
-  },
-  filterButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 100,
-    backgroundColor: 'rgba(255,255,255,0.05)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-  },
-  filterButtonActive: {
+  logoContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
     backgroundColor: '#0066FF',
-    borderColor: '#0066FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.2)',
   },
-  filterText: {
-    color: 'rgba(255,255,255,0.5)',
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 14,
-  },
-  filterTextActive: {
+  logoText: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
     color: '#fff',
   },
-  workoutList: {
+  featuredSection: {
+    paddingTop: 20,
+  },
+  sectionTitle: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 20,
+    color: '#fff',
+    marginBottom: 16,
+    paddingHorizontal: 20,
+  },
+  featuredContent: {
+    paddingHorizontal: 20,
     gap: 16,
   },
-  workoutCard: {
-    backgroundColor: 'rgba(255,255,255,0.05)',
+  featuredCard: {
+    width: 280,
     borderRadius: 24,
-    overflow: 'hidden',
+    padding: 24,
+    marginRight: 16,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  workoutContent: {
-    padding: 24,
+  featuredTitle: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: '#fff',
+    marginBottom: 16,
+  },
+  featuredStats: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 16,
+  },
+  featuredStat: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
+  },
+  featuredStatText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 14,
+    color: '#fff',
+  },
+  levelBadge: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 100,
+  },
+  levelText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 12,
+    color: '#fff',
+  },
+  categoriesSection: {
+    paddingTop: 32,
+    paddingHorizontal: 20,
+    paddingBottom: 32,
+  },
+  categoriesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: 16,
   },
-  iconContainer: {
+  categoryCard: {
+    width: '47%',
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  categoryIcon: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: 'rgba(0,102,255,0.1)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(0,102,255,0.2)',
+    marginBottom: 12,
   },
-  workoutInfo: {
-    flex: 1,
-  },
-  workoutTitle: {
-    color: '#fff',
+  categoryTitle: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 18,
+    fontSize: 16,
+    color: '#fff',
     marginBottom: 4,
   },
-  workoutDescription: {
+  categoryCount: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
     color: 'rgba(255,255,255,0.7)',
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-    marginBottom: 8,
-  },
-  workoutStats: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  workoutStat: {
-    color: 'rgba(255,255,255,0.5)',
-    fontFamily: 'Inter-Regular',
-    fontSize: 14,
-  },
-  workoutStatDot: {
-    color: 'rgba(255,255,255,0.5)',
-    marginHorizontal: 8,
   },
 });

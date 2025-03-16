@@ -22,23 +22,30 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ],
   ios: {
     supportsTablet: true,
-    bundleIdentifier: 'com.gymbuddy.app'
+    bundleIdentifier: 'com.gymbuddy.app',
+    infoPlist: {
+      NSCameraUsageDescription: 'GymBuddy needs access to your camera to scan gym equipment and provide proper form guidance.'
+    }
   },
   android: {
     adaptiveIcon: {
       foregroundImage: './assets/images/adaptive-icon.png',
       backgroundColor: '#000000'
     },
-    package: 'com.gymbuddy.app'
-  },
-  web: {
-    favicon: './assets/images/favicon.png'
+    package: 'com.gymbuddy.app',
+    permissions: ['CAMERA']
   },
   extra: {
     EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
     EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
   },
   plugins: [
-    'expo-router'
+    'expo-router',
+    [
+      'expo-camera',
+      {
+        cameraPermission: 'Allow GymBuddy to access your camera to scan gym equipment.'
+      }
+    ]
   ]
 });

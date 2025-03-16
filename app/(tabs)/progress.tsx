@@ -1,205 +1,343 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
-import { Calendar as CalendarIcon, TrendingUp, Award } from 'lucide-react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { Calendar, TrendingUp, Award, ChevronLeft, ChevronRight, Dumbbell, Timer } from 'lucide-react-native';
+import { useState } from 'react';
+import GradientBackground from '../../components/GradientBackground';
+import Svg, { Circle } from 'react-native-svg';
 
-const days = ['23', '24', '25', '26', '27', '28'];
-const activities = [
-  { id: 1, title: 'Swimming', duration: '40 min', calories: 320, time: '09:00 AM' },
-  { id: 2, title: 'Body Building', duration: '50 min', calories: 450, time: '11:30 AM' },
-  { id: 3, title: 'Running', duration: '30 min', calories: 280, time: '04:00 PM' },
+const { width } = Dimensions.get('window');
+
+const weekDays = ['23', '24', '25', '26', '27', '28'];
+const currentDate = new Date();
+
+const workoutStats = {
+  weeklyWorkouts: 5,
+  monthlyWorkouts: 20,
+  totalMinutes: 840,
+  averageIntensity: 7.5,
+};
+
+const recentWorkouts = [
+  {
+    id: 1,
+    name: 'Full Body Power',
+    duration: '45 min',
+    intensity: 'High',
+    calories: 450,
+    time: '09:30 AM',
+    color: '#FF6B6B',
+  },
+  {
+    id: 2,
+    name: 'HIIT Cardio',
+    duration: '30 min',
+    intensity: 'Medium',
+    calories: 380,
+    time: '02:15 PM',
+    color: '#4ECDC4',
+  },
 ];
 
-export default function ProgressScreen() {
+const CircularProgress = ({ progress, size }: { progress: number; size: number }) => {
+  const strokeWidth = 20;
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const progressOffset = circumference - (progress / 100) * circumference;
+
   return (
-    <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false}>
+    <Svg width={size} height={size}>
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke="rgba(255,255,255,0.05)"
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+      <Circle
+        cx={size / 2}
+        cy={size / 2}
+        r={radius}
+        stroke="#0066FF"
+        strokeWidth={strokeWidth}
+        strokeDasharray={`${circumference} ${circumference}`}
+        strokeDashoffset={progressOffset}
+        strokeLinecap="round"
+        fill="none"
+        transform={`rotate(-90 ${size / 2} ${size / 2})`}
+      />
+    </Svg>
+  );
+};
+
+export default function ProgressScreen() {
+  const [selectedDay, setSelectedDay] = useState('24');
+
+  return (
+    <GradientBackground>
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.header}>
-          <Text style={styles.title}>Daily Activities</Text>
-          <Text style={styles.date}>December 24</Text>
+          <View>
+            <Text style={styles.date}>December 24</Text>
+            <Text style={styles.title}>Daily Progress</Text>
+          </View>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoText}>F</Text>
+          </View>
         </View>
 
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={styles.calendar}
-          contentContainerStyle={styles.calendarContent}>
-          {days.map((day, index) => (
-            <View
+        <View style={styles.weekSelector}>
+          {weekDays.map((day) => (
+            <TouchableOpacity
               key={day}
-              style={[styles.dayCard, day === '24' && styles.dayCardActive]}>
-              <Text style={[styles.dayText, day === '24' && styles.dayTextActive]}>
+              onPress={() => setSelectedDay(day)}
+              style={[styles.dayButton, selectedDay === day && styles.selectedDay]}>
+              <Text style={[styles.dayText, selectedDay === day && styles.selectedDayText]}>
                 {day}
               </Text>
-            </View>
+            </TouchableOpacity>
           ))}
-        </ScrollView>
+        </View>
 
-        <View style={styles.progressCircle}>
-          <View style={styles.circleContent}>
-            <Text style={styles.percentage}>67%</Text>
-            <View style={styles.timeContainer}>
-              <View style={styles.timeBlock}>
-                <Text style={styles.timeLabel}>Wake Time</Text>
-                <Text style={styles.timeValue}>06:30</Text>
+        <View style={styles.progressSection}>
+          <View style={styles.progressContainer}>
+            <CircularProgress progress={67} size={width * 0.5} />
+            <View style={styles.progressContent}>
+              <Text style={styles.progressPercentage}>67%</Text>
+              <Text style={styles.progressLabel}>Daily Goal</Text>
+            </View>
+          </View>
+
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: '#FF6B6B20' }]}>
+                <Dumbbell size={24} color="#FF6B6B" />
               </View>
-              <View style={styles.timeDivider} />
-              <View style={styles.timeBlock}>
-                <Text style={styles.timeLabel}>Active Time</Text>
-                <Text style={styles.timeValue}>12:52</Text>
+              <Text style={styles.statValue}>{workoutStats.weeklyWorkouts}</Text>
+              <Text style={styles.statLabel}>Weekly</Text>
+            </View>
+            <View style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: '#4ECDC420' }]}>
+                <Timer size={24} color="#4ECDC4" />
               </View>
+              <Text style={styles.statValue}>{workoutStats.totalMinutes}</Text>
+              <Text style={styles.statLabel}>Minutes</Text>
+            </View>
+            <View style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: '#45B7D120' }]}>
+                <TrendingUp size={24} color="#45B7D1" />
+              </View>
+              <Text style={styles.statValue}>{workoutStats.averageIntensity}</Text>
+              <Text style={styles.statLabel}>Intensity</Text>
+            </View>
+            <View style={styles.statCard}>
+              <View style={[styles.statIcon, { backgroundColor: '#96CEB420' }]}>
+                <Award size={24} color="#96CEB4" />
+              </View>
+              <Text style={styles.statValue}>{workoutStats.monthlyWorkouts}</Text>
+              <Text style={styles.statLabel}>Monthly</Text>
             </View>
           </View>
         </View>
 
-        <View style={styles.activities}>
-          <Text style={styles.sectionTitle}>Today's Activities</Text>
-          {activities.map((activity) => (
-            <View key={activity.id} style={styles.activityCard}>
-              <View style={styles.activityInfo}>
-                <Text style={styles.activityTitle}>{activity.title}</Text>
-                <Text style={styles.activityTime}>{activity.time}</Text>
+        <View style={styles.recentWorkouts}>
+          <Text style={styles.sectionTitle}>Recent Workouts</Text>
+          {recentWorkouts.map((workout) => (
+            <TouchableOpacity
+              key={workout.id}
+              style={[styles.workoutCard, { backgroundColor: `${workout.color}10` }]}>
+              <View style={styles.workoutHeader}>
+                <Text style={styles.workoutName}>{workout.name}</Text>
+                <Text style={styles.workoutTime}>{workout.time}</Text>
               </View>
-              <View style={styles.activityStats}>
-                <Text style={styles.activityStat}>{activity.duration}</Text>
-                <Text style={styles.activityDot}>•</Text>
-                <Text style={styles.activityStat}>{activity.calories} cal</Text>
+              <View style={styles.workoutStats}>
+                <View style={styles.workoutStat}>
+                  <Timer size={16} color="#fff" />
+                  <Text style={styles.workoutStatText}>{workout.duration}</Text>
+                </View>
+                <Text style={styles.workoutStatDot}>•</Text>
+                <View style={styles.workoutStat}>
+                  <TrendingUp size={16} color="#fff" />
+                  <Text style={styles.workoutStatText}>{workout.intensity}</Text>
+                </View>
+                <Text style={styles.workoutStatDot}>•</Text>
+                <View style={styles.workoutStat}>
+                  <Award size={16} color="#fff" />
+                  <Text style={styles.workoutStatText}>{workout.calories} cal</Text>
+                </View>
               </View>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
       </ScrollView>
-    </View>
+    </GradientBackground>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000',
-    padding: 20,
   },
   header: {
-    marginTop: 60,
-    marginBottom: 24,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingTop: 60,
+    paddingBottom: 20,
+  },
+  date: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+    marginBottom: 4,
   },
   title: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 32,
+    color: '#fff',
+  },
+  logoContainer: {
+    width: 48,
+    height: 48,
+    borderRadius: 12,
+    backgroundColor: '#0066FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  logoText: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 24,
+    color: '#fff',
+  },
+  weekSelector: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 20,
+    marginBottom: 32,
+  },
+  dayButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.05)',
+  },
+  selectedDay: {
+    backgroundColor: '#0066FF',
+  },
+  dayText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  selectedDayText: {
+    color: '#fff',
+  },
+  progressSection: {
+    paddingHorizontal: 20,
+    marginBottom: 32,
+  },
+  progressContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 32,
+  },
+  progressContent: {
+    position: 'absolute',
+    alignItems: 'center',
+  },
+  progressPercentage: {
+    fontFamily: 'Inter-Bold',
+    fontSize: 36,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  progressLabel: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.7)',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+  },
+  statCard: {
+    width: (width - 56) / 2,
+    backgroundColor: 'rgba(255,255,255,0.05)',
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  statIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  statValue: {
     fontFamily: 'Inter-Bold',
     fontSize: 24,
     color: '#fff',
     marginBottom: 4,
   },
-  date: {
-    fontFamily: 'Inter-Regular',
-    fontSize: 16,
-    color: '#999',
-  },
-  calendar: {
-    marginBottom: 24,
-  },
-  calendarContent: {
-    gap: 12,
-  },
-  dayCard: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  dayCardActive: {
-    backgroundColor: '#007AFF',
-  },
-  dayText: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 16,
-    color: '#999',
-  },
-  dayTextActive: {
-    color: '#fff',
-  },
-  progressCircle: {
-    aspectRatio: 1,
-    backgroundColor: 'rgba(255,255,255,0.1)',
-    borderRadius: 999,
-    padding: 20,
-    marginBottom: 24,
-  },
-  circleContent: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  percentage: {
-    fontFamily: 'Inter-Bold',
-    fontSize: 48,
-    color: '#fff',
-    marginBottom: 16,
-  },
-  timeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-  },
-  timeBlock: {
-    alignItems: 'center',
-  },
-  timeLabel: {
+  statLabel: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#999',
-    marginBottom: 4,
+    color: 'rgba(255,255,255,0.7)',
   },
-  timeValue: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 20,
-    color: '#fff',
-  },
-  timeDivider: {
-    width: 1,
-    height: 40,
-    backgroundColor: '#333',
-  },
-  activities: {
-    gap: 16,
+  recentWorkouts: {
+    padding: 20,
   },
   sectionTitle: {
     fontFamily: 'Inter-Bold',
     fontSize: 20,
     color: '#fff',
-    marginBottom: 8,
+    marginBottom: 16,
   },
-  activityCard: {
-    backgroundColor: 'rgba(255,255,255,0.1)',
+  workoutCard: {
     borderRadius: 16,
     padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
   },
-  activityInfo: {
+  workoutHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 12,
   },
-  activityTitle: {
+  workoutName: {
     fontFamily: 'Inter-SemiBold',
-    fontSize: 16,
+    fontSize: 18,
     color: '#fff',
   },
-  activityTime: {
+  workoutTime: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#999',
+    color: 'rgba(255,255,255,0.7)',
   },
-  activityStats: {
+  workoutStats: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
   },
-  activityStat: {
+  workoutStat: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  workoutStatText: {
     fontFamily: 'Inter-Regular',
     fontSize: 14,
-    color: '#999',
+    color: 'rgba(255,255,255,0.7)',
   },
-  activityDot: {
-    color: '#666',
+  workoutStatDot: {
+    color: 'rgba(255,255,255,0.3)',
+    marginHorizontal: 8,
   },
 });

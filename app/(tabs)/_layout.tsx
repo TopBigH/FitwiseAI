@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Dumbbell, Calendar, Camera, User } from 'lucide-react-native';
+import { View } from 'react-native';
 
 export default function TabLayout() {
   return (
@@ -12,14 +13,15 @@ export default function TabLayout() {
           borderTopColor: '#222',
           paddingBottom: 8,
           paddingTop: 8,
-          height: 60,
+          height: 80,
         },
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: '#0066FF',
         tabBarInactiveTintColor: '#666',
         tabBarLabelStyle: {
           fontFamily: 'Inter-Regular',
           fontSize: 12,
           marginTop: 4,
+          paddingBottom: 4,
         },
       }}>
       <Tabs.Screen

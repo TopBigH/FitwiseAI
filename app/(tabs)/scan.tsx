@@ -1,5 +1,9 @@
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
-import { Camera, Info, ChevronRight } from 'lucide-react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, Platform } from 'react-native';
+import { Camera as CameraIcon, Info, ChevronRight, X } from 'lucide-react-native';
+import { Camera, CameraType } from 'expo-camera';
+import { useState, useEffect, useRef } from 'react';
+import { router } from 'expo-router';
+import { useAppNavigation } from '../../hooks/useAppNavigation';
 import GradientBackground from '../../components/GradientBackground';
 
 const recentScans = [
@@ -18,6 +22,102 @@ const recentScans = [
 ];
 
 export default function ScanScreen() {
+  const [permission, requestPermission] = Camera.useCameraPermissions();
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const cameraRef = useRef<Camera>(null);
+  const { navigateBack } = useAppNavigation();
+
+  const handleScanPress = async () => {
+    if (Platform.OS === 'web') {
+      alert('Camera scanning is only available in the mobile app. Please download our mobile app for full functionality.');
+      return;
+    }
+
+    if (!permission?.granted) {
+      const { granted } = await requestPermission();
+      if (!granted) {
+        return;
+      }
+    }
+
+    setIsCameraActive(true);
+  };
+
+  const handleCapture = async () => {
+    if (!cameraRef.current) return;
+
+    try {
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 1,
+        base64: true,
+      });
+      // Here you would typically send the photo to your AI model for processing
+      console.log('Photo taken:', photo.uri);
+      setIsCameraActive(false);
+    } catch (error) {
+      console.error('Error taking picture:', error);
+      setIsCameraActive(false);
+    }
+  };
+
+  const handleEquipmentPress = (id: number) => {
+    router.push(`/equipment/${id}`);
+  };
+
+  if (Platform.OS !== 'web' && !permission?.granted && permission?.canAskAgain) {
+    return (
+      <GradientBackground>
+        <View style={styles.container}>
+          <Text style={styles.text}>We need your permission to use the camera</Text>
+          <TouchableOpacity 
+            style={styles.retryButton}
+            onPress={requestPermission}>
+            <Text style={styles.retryButtonText}>Grant Permission</Text>
+          </TouchableOpacity>
+        </View>
+      </GradientBackground>
+    );
+  }
+
+  if (Platform.OS !== 'web' && !permission?.granted && !permission?.canAskAgain) {
+    return (
+      <GradientBackground>
+        <View style={styles.container}>
+          <Text style={styles.text}>Camera access is required. Please enable it in your device settings.</Text>
+        </View>
+      </GradientBackground>
+    );
+  }
+
+  if (isCameraActive && Platform.OS !== 'web') {
+    return (
+      <View style={styles.cameraContainer}>
+        <Camera
+          ref={cameraRef}
+          style={styles.camera}
+          type={CameraType.back}
+        >
+          <View style={styles.cameraOverlay}>
+            <TouchableOpacity 
+              style={styles.closeButton}
+              onPress={() => setIsCameraActive(false)}>
+              <X size={24} color="#fff" />
+            </TouchableOpacity>
+            <View style={styles.scanFrame} />
+            <Text style={styles.scanInstructions}>
+              Center the equipment in the frame
+            </Text>
+            <TouchableOpacity 
+              style={styles.captureButton}
+              onPress={handleCapture}>
+              <View style={styles.captureButtonInner} />
+            </TouchableOpacity>
+          </View>
+        </Camera>
+      </View>
+    );
+  }
+
   return (
     <GradientBackground>
       <View style={styles.container}>
@@ -26,11 +126,18 @@ export default function ScanScreen() {
           <Text style={styles.subtitle}>Learn proper form and technique</Text>
         </View>
 
-        <TouchableOpacity style={styles.cameraButton}>
+        <TouchableOpacity 
+          style={styles.cameraButton}
+          onPress={handleScanPress}>
           <View style={styles.cameraIcon}>
-            <Camera size={32} color="#fff" />
+            <CameraIcon size={32} color="#fff" />
           </View>
           <Text style={styles.cameraText}>Tap to Scan Equipment</Text>
+          {Platform.OS === 'web' && (
+            <Text style={styles.webNote}>
+              Download our mobile app for camera functionality
+            </Text>
+          )}
         </TouchableOpacity>
 
         <View style={styles.infoCard}>
@@ -49,7 +156,10 @@ export default function ScanScreen() {
         <View style={styles.recentSection}>
           <Text style={styles.recentTitle}>Recent Scans</Text>
           {recentScans.map((scan) => (
-            <TouchableOpacity key={scan.id} style={styles.scanItem}>
+            <TouchableOpacity 
+              key={scan.id} 
+              style={styles.scanItem}
+              onPress={() => handleEquipmentPress(scan.id)}>
               <Image source={{ uri: scan.image }} style={styles.scanImage} />
               <View style={styles.scanInfo}>
                 <Text style={styles.scanName}>{scan.name}</Text>
@@ -84,6 +194,25 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'rgba(255,255,255,0.7)',
   },
+  text: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  retryButton: {
+    backgroundColor: '#0066FF',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignSelf: 'center',
+  },
+  retryButtonText: {
+    fontFamily: 'Inter-SemiBold',
+    fontSize: 16,
+    color: '#fff',
+  },
   cameraButton: {
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: 24,
@@ -106,6 +235,12 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-SemiBold',
     fontSize: 16,
     color: '#fff',
+  },
+  webNote: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.5)',
+    marginTop: 8,
   },
   infoCard: {
     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -167,5 +302,54 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     fontSize: 14,
     color: 'rgba(255,255,255,0.5)',
+  },
+  cameraContainer: {
+    flex: 1,
+    backgroundColor: '#000',
+  },
+  camera: {
+    flex: 1,
+  },
+  cameraOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    padding: 20,
+  },
+  closeButton: {
+    alignSelf: 'flex-end',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 40,
+  },
+  scanFrame: {
+    flex: 1,
+    margin: 40,
+    borderWidth: 2,
+    borderColor: '#0066FF',
+    borderRadius: 20,
+  },
+  scanInstructions: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 16,
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  captureButton: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 40,
+  },
+  captureButtonInner: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#fff',
   },
 });
