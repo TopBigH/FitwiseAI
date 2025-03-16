@@ -1,0 +1,2 @@
+# FitwiseAI
+AI GymBuddyApp
